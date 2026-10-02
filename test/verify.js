@@ -1,10 +1,11 @@
 const http = require('http');
 const app = require('../server');
 const { setTTL, clearCache, TTL } = require('../middleware/cache');
-const { readDb, writeDb } = require('../database/db');
+const fs = require('fs');
+const { dbPath } = require('../database/db');
 
-// Backup db.json data before tests
-const originalDbData = readDb();
+// Backup raw db.json content before tests
+const originalRawDb = fs.readFileSync(dbPath, 'utf8');
 
 const runTests = async () => {
   console.log('--- Starting Verification Test Suite ---');
@@ -179,8 +180,8 @@ const runTests = async () => {
 
     console.log(`\n--- Verification Summary: ${passed} of ${total} tests passed ---`);
   } finally {
-    // Restore original db.json content
-    writeDb(originalDbData);
+    // Restore exact original db.json content
+    fs.writeFileSync(dbPath, originalRawDb, 'utf8');
     server.close();
   }
 };
