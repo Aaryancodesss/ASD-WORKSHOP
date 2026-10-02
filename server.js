@@ -1,63 +1,41 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const productRoutes = require('./routes/productRoutes');
+const { cacheMiddleware } = require('./middleware/cache');
+const productController = require('./controllers/productController');
+const { readDb } = require('./database/db');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// Middleware to parse incoming JSON payloads
 app.use(express.json());
 
-const dbPath = path.join(__dirname, 'db.json');
+// Mount product routes (Route -> Middleware -> Controller -> Service -> Database)
+app.use('/products', productRoutes);
 
-// Helper function to read data from db.json
-const readDb = () => {
-  const fileData = fs.readFileSync(dbPath, 'utf8');
-  return JSON.parse(fileData);
-};
+// Root route for convenience and backwards compatibility
+app.get('/', cacheMiddleware, productController.getAllProducts.bind(productController));
 
-// Route to get all data
-app.get('/', (req, res) => {
-  try {
-    const products = readDb();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Error reading db.json', message: error.message });
-  }
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// Route to get all products
-app.get('/products', (req, res) => {
-  try {
-    const products = readDb();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Error reading db.json', message: error.message });
-  }
-});
+// Start the server if executed directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
 
-// Route to get single product by ID
-app.get('/products/:id', (req, res) => {
-  try {
-    const products = readDb();
-    const product = products.find((p) => p.id === parseInt(req.params.id, 10));
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+    // Display db.json data on startup
+    try {
+      const products = readDb();
+      console.log('db.json data read successfully:');
+      console.log(products);
+    } catch (err) {
+      console.error('Failed to read db.json:', err.message);
     }
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: 'Error reading db.json', message: error.message });
-  }
-});
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-  
-  // Console me db.json ka data display karna:
-  try {
-    const products = readDb();
-    console.log('db.json data read successfully:');
-    console.log(products);
-  } catch (err) {
-    console.error('Failed to read db.json:', err.message);
-  }
-});
+module.exports = app;
