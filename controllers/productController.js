@@ -1,13 +1,6 @@
 const productService = require('../services/productService');
 
-/**
- * Controller handling HTTP requests and delegating to ProductService.
- */
 class ProductController {
-  /**
-   * GET /products
-   * Retrieve all products.
-   */
   getAllProducts(req, res) {
     try {
       const products = productService.getAllProducts();
@@ -17,10 +10,6 @@ class ProductController {
     }
   }
 
-  /**
-   * GET /products/:id
-   * Retrieve single product by ID.
-   */
   getProductById(req, res) {
     try {
       const product = productService.getProductById(req.params.id);
@@ -33,10 +22,6 @@ class ProductController {
     }
   }
 
-  /**
-   * POST /products
-   * Create a new product.
-   */
   createProduct(req, res) {
     try {
       const { name, price } = req.body;
@@ -54,10 +39,6 @@ class ProductController {
     }
   }
 
-  /**
-   * PUT /products/:id
-   * Fully update an existing product.
-   */
   updateProduct(req, res) {
     try {
       const { name, price } = req.body;
@@ -79,10 +60,6 @@ class ProductController {
     }
   }
 
-  /**
-   * PATCH /products/:id
-   * Partially update an existing product.
-   */
   patchProduct(req, res) {
     try {
       const { name, price } = req.body;
@@ -111,10 +88,6 @@ class ProductController {
     }
   }
 
-  /**
-   * DELETE /products/:id
-   * Delete a product by ID.
-   */
   deleteProduct(req, res) {
     try {
       const deletedProduct = productService.deleteProduct(req.params.id);

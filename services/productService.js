@@ -1,22 +1,10 @@
 const db = require('../database/db');
 
-/**
- * Service handling product business logic and persistence.
- */
 class ProductService {
-  /**
-   * Fetch all products from database.
-   * @returns {Array<Object>}
-   */
   getAllProducts() {
     return db.readDb();
   }
 
-  /**
-   * Find product by ID.
-   * @param {number|string} id 
-   * @returns {Object|null}
-   */
   getProductById(id) {
     const numericId = parseInt(id, 10);
     const products = db.readDb();
@@ -24,15 +12,9 @@ class ProductService {
     return product || null;
   }
 
-  /**
-   * Create a new product.
-   * @param {Object} productData 
-   * @returns {Object} Created product
-   */
   createProduct(productData) {
     const products = db.readDb();
     
-    // Auto-increment ID based on highest existing ID
     const nextId = products.length > 0 
       ? Math.max(...products.map((p) => (typeof p.id === 'number' ? p.id : parseInt(p.id, 10) || 0))) + 1 
       : 1;
@@ -48,12 +30,6 @@ class ProductService {
     return newProduct;
   }
 
-  /**
-   * Fully update a product by ID (PUT).
-   * @param {number|string} id 
-   * @param {Object} productData 
-   * @returns {Object|null} Updated product or null if not found
-   */
   updateProduct(id, productData) {
     const numericId = parseInt(id, 10);
     const products = db.readDb();
@@ -74,12 +50,6 @@ class ProductService {
     return updatedProduct;
   }
 
-  /**
-   * Partially update a product by ID (PATCH).
-   * @param {number|string} id 
-   * @param {Object} partialData 
-   * @returns {Object|null} Updated product or null if not found
-   */
   patchProduct(id, partialData) {
     const numericId = parseInt(id, 10);
     const products = db.readDb();
@@ -93,7 +63,7 @@ class ProductService {
     const patchedProduct = {
       ...currentProduct,
       ...partialData,
-      id: numericId, // Ensure ID cannot be changed
+      id: numericId,
     };
 
     if (partialData.price !== undefined) {
@@ -107,11 +77,6 @@ class ProductService {
     return patchedProduct;
   }
 
-  /**
-   * Delete a product by ID.
-   * @param {number|string} id 
-   * @returns {Object|null} Deleted product or null if not found
-   */
   deleteProduct(id) {
     const numericId = parseInt(id, 10);
     const products = db.readDb();

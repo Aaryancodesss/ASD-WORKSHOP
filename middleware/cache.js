@@ -1,48 +1,20 @@
-/**
- * In-memory cache store and caching middleware.
- * Stores { data, createdAt } for cached endpoints with a 1-minute TTL.
- */
-
-const DEFAULT_TTL = 60 * 1000; // 1 minute in milliseconds
+const DEFAULT_TTL = 60 * 1000;
 let currentTTL = DEFAULT_TTL;
 
-// In-memory cache storage: key -> { data, createdAt }
 const cacheStore = new Map();
 
-/**
- * Clear all cache entries.
- */
 const clearCache = () => {
   cacheStore.clear();
 };
 
-/**
- * Retrieve cache store for debugging or testing.
- * @returns {Map<string, {data: any, createdAt: number}>}
- */
 const getCacheStore = () => cacheStore;
 
-/**
- * Set custom TTL (primarily for testing expiration).
- * @param {number} ttlMs 
- */
 const setTTL = (ttlMs) => {
   currentTTL = ttlMs;
 };
 
-/**
- * Get the current TTL in milliseconds.
- * @returns {number}
- */
 const getTTL = () => currentTTL;
 
-/**
- * Caching middleware for GET endpoints.
- * - Adds 'X-Cache: HIT' header when data is served from valid cache.
- * - Adds 'X-Cache: MISS' header when data is not cached or expired.
- * - Stores entry with creation timestamp (createdAt).
- * - Enforces 1-minute TTL.
- */
 const cacheMiddleware = (req, res, next) => {
   if (req.method !== 'GET') {
     return next();
@@ -56,16 +28,13 @@ const cacheMiddleware = (req, res, next) => {
     const isExpired = age > currentTTL;
 
     if (!isExpired) {
-      // CACHE HIT
       res.set('X-Cache', 'HIT');
       return res.status(200).json(cachedEntry.data);
     } else {
-      // Cache entry expired: remove stale data
       cacheStore.delete(key);
     }
   }
 
-  // CACHE MISS: fetch from controller/database and cache fresh result
   res.set('X-Cache', 'MISS');
 
   let isCached = false;
@@ -102,11 +71,6 @@ const cacheMiddleware = (req, res, next) => {
   next();
 };
 
-/**
- * Cache invalidation middleware for modifying requests (POST, PUT, PATCH, DELETE).
- * Whenever stored data is successfully modified (HTTP 2xx response),
- * all cache entries that may contain stale data are invalidated.
- */
 const invalidateCacheMiddleware = (req, res, next) => {
   const method = req.method.toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {

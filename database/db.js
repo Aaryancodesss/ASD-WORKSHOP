@@ -3,10 +3,6 @@ const path = require('path');
 
 const dbPath = path.join(__dirname, '..', 'db.json');
 
-/**
- * Reads all records from the db.json file.
- * @returns {Array<Object>} List of records
- */
 const readDb = () => {
   try {
     if (!fs.existsSync(dbPath)) {
@@ -20,10 +16,6 @@ const readDb = () => {
   }
 };
 
-/**
- * Writes records to the db.json file.
- * @param {Array<Object>} data - Data to persist
- */
 const writeDb = (data) => {
   try {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
